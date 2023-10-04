@@ -1,73 +1,64 @@
-#include <stdio.h>
+struct Process
+{
+    int arrival_time;
+    int burst_time;
+    int waiting_time;
+};
+
+int compare(const void *a, const void *b)
+{
+    struct Process *p1 = (struct Process *)a;
+    struct Process *p2 = (struct Process *)b;
+    return p1->burst_time - p2->burst_time;
+}
+
 int main()
 {
-    int p[10], at[10], bt[10], ct[10], tat[10], wt[10], i, j, temp = 0, n;
-    float awt = 0, atat = 0;
-    printf("enter no of proccess you want:");
+    int n, i, j;
+    float avg_waiting_time = 0, avg_turnaround_time = 0;
+    printf("Enter the number of processes: ");
     scanf("%d", &n);
-    printf("enter %d process:", n);
+    struct Process processes[n];
     for (i = 0; i < n; i++)
     {
-        scanf("%d", &p[i]);
+        printf("Enter arrival time and burst time of process %d: ", i + 1);
+        scanf("%d %d", &processes[i].arrival_time, &processes[i].burst_time);
     }
-    printf("enter %d arrival time:", n);
-    for (i = 0; i < n; i++)
-    {
-        scanf("%d", &at[i]);
-    }
-    printf("enter %d burst time:", n);
-    for (i = 0; i < n; i++)
-    {
-        scanf("%d", &bt[i]);
-    }
-    // sorting at,bt, and process according to at
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < (n - i); j++)
-        {
-            if (bt[j] > bt[j + 1])
-            {
-                temp = p[j + 1];
-                p[j + 1] = p[j];
-                p[j] = temp;
-                temp = at[j + 1];
-                at[j + 1] = at[j];
-                at[j] = temp;
-                temp = at[j + 1];
-                at[j + 1] = at[j];
-                at[j] = temp;
-            }
-        }
-    }
-    /* calculating 1st ct */
-    ct[0] = at[0] + bt[0];
-    /* calculating 2 to n ct */
+    qsort(processes, n, sizeof(struct Process), compare);
+    processes[0].waiting_time = 0;
     for (i = 1; i < n; i++)
     {
-        // when proess is ideal in between i and i+1
-        temp = 0;
-        if (ct[i - 1] < at[i])
+        processes[i].waiting_time = 0;
+        for (j = 0; j < i; j++)
         {
-            temp = at[i] - ct[i - 1];
+
+            processes[i].waiting_time += processes[j].burst_time;
         }
-        ct[i] = ct[i - 1] + bt[i] + temp;
+
+        avg_waiting_time += processes[i].waiting_time;
     }
-    /* calculating tat and wt */
-    printf("\np\t A.T\t B.T\t C.T\t TAT\t WT");
+
+    avg_waiting_time /= n;
+
     for (i = 0; i < n; i++)
     {
-        tat[i] = ct[i] - at[i];
-        wt[i] = tat[i] - bt[i];
-        atat += tat[i];
-        awt += wt[i];
+
+        avg_turnaround_time += processes[i].burst_time + processes[i].waiting_time;
     }
-    atat = atat / n;
-    awt = awt / n;
+
+    avg_turnaround_time /= n;
+
+    printf("\nProcess\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n");
+
     for (i = 0; i < n; i++)
     {
-        printf("\nP%d\t %d\t %d\t %d \t %d \t %d", p[i], at[i], bt[i], ct[i], tat[i], wt[i]);
+
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\n", i + 1, processes[i].arrival_time, processes[i].burst_time, processes[i].waiting_time, processes[i].burst_time + processes[i].waiting_time);
     }
-    printf("\naverage turnaround time is %f", atat);
-    printf("\naverage wating timme is %f", awt);
+
+    printf("\nAverage Waiting Time: %f\n", avg_waiting_time);
+
+    printf("Average Turnaround Time: %f\n", avg_turnaround_time);
+
     return 0;
 }
